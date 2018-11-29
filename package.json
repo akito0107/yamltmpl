@@ -1,0 +1,67 @@
+{
+  "name": "yamltmpl",
+  "version": "0.0.1",
+  "main": "./lib/types.js",
+  "types": "./lib/types.d.ts",
+  "license": "apache-2.0",
+  "repository": "akito0107/yamltmpl",
+  "author": {
+    "name": "Akito Ito",
+    "email": "akito0107@gmail.com"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "tslint ./src/**/*.ts",
+    "fmt": "tslint --fix",
+    "gen-swagger": "ts-node src/generator.ts",
+    "tsc": "npm run clean && tsc",
+    "clean": "rimraf ./lib/*"
+  },
+  "bin": {
+    "yamltmpl": "lib/yamltmpl.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.9",
+    "@types/power-assert": "^1.5.0",
+    "jest": "^23.6.0",
+    "power-assert": "^1.6.1",
+    "prettier": "^1.14.3",
+    "ts-jest": "^23.10.4",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.1.6"
+  },
+  "jest": {
+    "testURL": "http://localhost/",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    },
+    "testMatch": [
+      "**/__tests__/*.+(ts|tsx|js)"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "helper.ts"
+    ]
+  },
+  "dependencies": {
+    "@types/minimist": "^1.2.0",
+    "@types/node": "^10.12.2",
+    "handlebars": "^4.0.12",
+    "js-yaml": "^3.12.0",
+    "minimist": "^1.2.0",
+    "rimraf": "^2.6.2"
+  }
+}
