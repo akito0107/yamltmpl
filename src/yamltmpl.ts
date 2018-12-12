@@ -125,15 +125,13 @@ function renderTemplate(
       if (!overwrite) {
         try {
           fs.accessSync(outFileName, fs.constants.F_OK);
-        } catch {
           process.stdout.write(
-            `WARN: file: ${outFileName} is already exits skipping...\n`
+            `WARN: file: ${outFileName} is already exists. skipping...\n`
           );
-          return;
+        } catch {
+          fs.writeFileSync(outFileName, data);
         }
       }
-
-      fs.writeFileSync(outFileName, data);
     }
   });
 }
