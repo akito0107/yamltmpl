@@ -16,6 +16,7 @@ Options:
   --extension                        output file extension (required)
   --prefix                           prefix strings
   --dry-run                          dry-run mode
+  --overwrite                        allow over write.
   --help                             Shows the usage and exits.
   --version                          Shows version number and exits.
 Examples:
@@ -32,7 +33,7 @@ function main() {
       "output-extension",
       "prefix"
     ],
-    boolean: ["help", "dry-run"]
+    boolean: ["help", "dry-run", "overwrite"]
   });
 
   if (argv.help) {
@@ -74,6 +75,7 @@ function main() {
     argv.out,
     argv.extension,
     argv.prefix,
+    argv.overwrite,
     argv["dry-run"]
   );
 }
@@ -102,6 +104,7 @@ function renderTemplate(
   outputPath,
   outputExtension: string,
   prefix: string = "",
+  overwrite: boolean = false,
   dryRun: boolean = true
 ) {
   const basePath = process.cwd();
@@ -119,6 +122,17 @@ function renderTemplate(
       process.stdout.write(`going to write ${outFileName}\n`);
       process.stdout.write(data);
     } else {
+      if (!overwrite) {
+        try {
+          fs.accessSync(outFileName, fs.constants.F_OK);
+        } catch {
+          process.stdout.write(
+            `WARN: file: ${outFileName} is already exits skipping...\n`
+          );
+          return;
+        }
+      }
+
       fs.writeFileSync(outFileName, data);
     }
   });
