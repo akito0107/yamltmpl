@@ -5,6 +5,7 @@ import * as Handlebars from "handlebars";
 import * as yaml from "js-yaml";
 import * as minimist from "minimist";
 import * as path from "path";
+import * as changeCase from "change-case";
 
 const help = `
 Usage: yamltmpl [options]
@@ -17,22 +18,20 @@ Options:
   --help                             Shows the usage and exits.
   --version                          Shows version number and exits.
 Examples:
-  yamltmpl --path ./agreed.ts
+  yamltmpl --template tmpl.mustache --context-path ctxdir --out out --extension .ts
 `.trim();
 
 function main() {
   const argv = minimist(process.argv.slice(2), {
     string: [
-      "help",
       "version",
       "template",
       "context-path",
       "output",
       "output-extension"
     ],
-    boolean: ["dry-run"]
+    boolean: ["help", "dry-run"]
   });
-  enhanceHandlebars(Handlebars);
 
   if (argv.help) {
     return showHelp(0, help);
@@ -43,6 +42,29 @@ function main() {
     process.stdout.write(pack.version);
     return;
   }
+
+  if (!argv.template) {
+    process.stderr.write("--template is required");
+    return showHelp(1, help);
+  }
+
+  if (!argv["context-path"]) {
+    process.stderr.write("--context-path is required");
+    return showHelp(1, help);
+  }
+
+  if (!argv.out) {
+    process.stderr.write("--out is required");
+    return showHelp(1, help);
+  }
+
+  if (!argv.extension) {
+    process.stderr.write("--extension is required");
+    return showHelp(1, help);
+  }
+
+  enhanceHandlebars(Handlebars);
+
   const contexts = loadContexts(argv["context-path"]);
   renderTemplate(
     argv.template,
@@ -103,6 +125,18 @@ function showHelp(exitcode, helpstr) {
 function enhanceHandlebars(handlebars) {
   handlebars.registerHelper("increments", value => {
     return parseInt(value) + 1;
+  });
+  handlebars.registerHelper("toSnake", value => {
+    return changeCase.snakeCase(value);
+  });
+  handlebars.registerHelper("toCamel", value => {
+    return changeCase.camelCase(value);
+  });
+  handlebars.registerHelper("toPascal", value => {
+    return changeCase.pascalCase(value);
+  });
+  handlebars.registerHelper("toLowerCaseFirst", value => {
+    return changeCase.lowerCaseFirst(value);
   });
 }
 
