@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import * as changeCase from "change-case";
 import * as fs from "fs";
 import * as Handlebars from "handlebars";
 import * as yaml from "js-yaml";
 import * as minimist from "minimist";
 import * as path from "path";
-import * as changeCase from "change-case";
 
 const help = `
 Usage: yamltmpl [options]
@@ -14,6 +14,7 @@ Options:
   --context-path                     context files dir path (required)
   --out                              output path dir (required)
   --extension                        output file extension (required)
+  --prefix                           prefix strings
   --dry-run                          dry-run mode
   --help                             Shows the usage and exits.
   --version                          Shows version number and exits.
@@ -28,7 +29,8 @@ function main() {
       "template",
       "context-path",
       "output",
-      "output-extension"
+      "output-extension",
+      "prefix"
     ],
     boolean: ["help", "dry-run"]
   });
@@ -71,6 +73,7 @@ function main() {
     contexts,
     argv.out,
     argv.extension,
+    argv.prefix,
     argv["dry-run"]
   );
 }
@@ -98,6 +101,7 @@ function renderTemplate(
   contexts: object[],
   outputPath,
   outputExtension: string,
+  prefix: string = "",
   dryRun: boolean = true
 ) {
   const basePath = process.cwd();
@@ -107,7 +111,10 @@ function renderTemplate(
   );
   contexts.forEach((c: any) => {
     const data = template(c);
-    const outFileName = path.resolve(outPath, c.fileName + outputExtension);
+    const outFileName = path.resolve(
+      outPath,
+      prefix + c.fileName + outputExtension
+    );
     if (dryRun) {
       process.stdout.write(`going to write ${outFileName}\n`);
       process.stdout.write(data);
