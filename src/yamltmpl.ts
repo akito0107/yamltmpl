@@ -128,9 +128,9 @@ function renderTemplate(
           process.stdout.write(
             `WARN: file: ${outFileName} is already exists. skipping...\n`
           );
-        } catch {
-          fs.writeFileSync(outFileName, data);
-        }
+          return
+        } catch { }
+        fs.writeFileSync(outFileName, data);
       }
     }
   });
