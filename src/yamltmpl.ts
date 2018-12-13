@@ -130,8 +130,8 @@ function renderTemplate(
           );
           return
         } catch { }
-        fs.writeFileSync(outFileName, data);
       }
+      fs.writeFileSync(outFileName, data);
     }
   });
 }
