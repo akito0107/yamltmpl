@@ -17,6 +17,7 @@ Options:
   --prefix                           prefix strings
   --dry-run                          dry-run mode
   --overwrite                        allow over write.
+  --unified                          output one file from multiple contexts
   --help                             Shows the usage and exits.
   --version                          Shows version number and exits.
 Examples:
@@ -33,7 +34,7 @@ function main() {
       "output-extension",
       "prefix"
     ],
-    boolean: ["help", "dry-run", "overwrite"]
+    boolean: ["help", "dry-run", "overwrite", "unified"]
   });
 
   if (argv.help) {
@@ -69,6 +70,20 @@ function main() {
   enhanceHandlebars(Handlebars);
 
   const contexts = loadContexts(argv["context-path"]);
+
+  if (argv.unified) {
+    renderUnifiedTemplate(
+      argv.template,
+      contexts,
+      argv.out,
+      argv.extension,
+      argv.prefix,
+      argv.overwrite,
+      argv["dry-run"]
+    );
+    return;
+  }
+
   renderTemplate(
     argv.template,
     contexts,
@@ -98,6 +113,24 @@ function loadContexts(srcPath: string): object[] {
   return contexts;
 }
 
+function write({ dryRun, outFileName, overwrite, data }) {
+  if (dryRun) {
+    process.stdout.write(`going to write ${outFileName}\n`);
+    process.stdout.write(data);
+  } else {
+    if (!overwrite) {
+      try {
+        fs.accessSync(outFileName, fs.constants.F_OK);
+        process.stdout.write(
+          `WARN: file: ${outFileName} is already exists. skipping...\n`
+        );
+        return;
+      } catch {}
+    }
+    fs.writeFileSync(outFileName, data);
+  }
+}
+
 function renderTemplate(
   templatePath: string,
   contexts: object[],
@@ -118,22 +151,33 @@ function renderTemplate(
       outPath,
       prefix + c.fileName + outputExtension
     );
-    if (dryRun) {
-      process.stdout.write(`going to write ${outFileName}\n`);
-      process.stdout.write(data);
-    } else {
-      if (!overwrite) {
-        try {
-          fs.accessSync(outFileName, fs.constants.F_OK);
-          process.stdout.write(
-            `WARN: file: ${outFileName} is already exists. skipping...\n`
-          );
-          return
-        } catch { }
-      }
-      fs.writeFileSync(outFileName, data);
-    }
+    write({ dryRun, outFileName, overwrite, data });
   });
+}
+
+function renderUnifiedTemplate(
+  templatePath: string,
+  contexts: Object[],
+  outputPath,
+  outputExtension: string,
+  prefix: string = "",
+  overwrite: boolean = false,
+  dryRun: boolean = true
+) {
+  const basePath = process.cwd();
+  const outPath = path.resolve(process.cwd(), outputPath);
+  const template = Handlebars.compile(
+    fs.readFileSync(path.resolve(basePath, templatePath), "utf8")
+  );
+  const fileName = path.basename(templatePath, ".mustache");
+  const composedContext = { fileName, contexts };
+  const data = template(composedContext);
+
+  const outFileName = path.resolve(
+    outPath,
+    prefix + fileName + outputExtension
+  );
+  write({ dryRun, outFileName, overwrite, data });
 }
 
 function showHelp(exitcode, helpstr) {
